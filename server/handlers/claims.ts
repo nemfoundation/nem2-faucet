@@ -36,7 +36,7 @@ export const claimsHandler = (appConfig: IApp) => {
         const recipientAddress: Address = Address.createFromRawAddress(recipient);
         const feeMultiplier = (await repositoryFactory.createNetworkRepository().getTransactionFees().toPromise()).highestFeeMultiplier;
 
-        forkJoin(
+        forkJoin([
             repositoryFactory.createNamespaceRepository().getMosaicsNames(mosaicIds),
             repositoryFactory.createMosaicRepository().getMosaics(mosaicIds),
             repositoryFactory.createAccountRepository().getAccountInfo(faucetAccount.address),
@@ -66,7 +66,7 @@ export const claimsHandler = (appConfig: IApp) => {
                         return of([]);
                     }),
                 ),
-        )
+        ])
             .pipe(
                 map((results) => {
                     const [

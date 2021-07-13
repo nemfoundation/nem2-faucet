@@ -45,7 +45,7 @@
                         </div>
 
                         <div v-if="hasNativeMosaicAmount" class="inputGroup">
-                            <span>XYM Amount</span>
+                            <span>{{ mosaicTicker }} Amount</span>
                             <b-form-input id="input-small" v-model="form.amount" type="number" size="sm" :placeholder="amountPlaceholder" />
                         </div>
                     </div>
@@ -61,13 +61,16 @@
 
 <script>
 import Loading from '@/components/Loading.vue';
+import { Address } from 'symbol-sdk';
 
 export default {
     components: {
         Loading,
     },
     props: {
+        address: { type: String, default: '' },
         mosaicId: { type: String, default: '' },
+        mosaicTicker: { type: String, default: '' },
         recipientPlaceholder: { type: String, default: '' },
         amountPlaceholder: { type: String, default: '' },
         filterMosaics: { type: Array, default: () => [''] },
@@ -105,14 +108,19 @@ export default {
     methods: {
         claim_store() {
             // Format data
-            this.form.recipient = this.form.recipient.replace(/\s|-/g, '');
+            this.form.recipient = this.form.recipient.replace(/\s|-/g, '').toUpperCase();
             this.form.selectedMosaics = this.mosaicSelectManager.map((mosaic) => mosaic.mosaicId);
             this.form.amount = Number(this.form.amount | 0);
-
-            if (this.form.recipient.length !== 39 || this.form.recipient.charAt(0) !== 'T') {
-                this.$parent.makeToast('warning', `Address format incorrect.`);
-            } else {
-                this.$store.dispatch('claimFaucet', { ...this.form });
+            try {
+                const sender = Address.createFromRawAddress(this.address);
+                const recipient = Address.createFromRawAddress(this.form.recipient);
+                if (recipient.networkType !== sender.networkType) {
+                    this.$parent.makeToast('warning', `Incorrect network. Address must start with a capital ${this.address[0]}.`);
+                } else {
+                    this.$store.dispatch('claimFaucet', { ...this.form });
+                }
+            } catch (e) {
+                this.$parent.makeToast('warning', `Incorrect address format.`);
             }
         },
         add_mosaic() {

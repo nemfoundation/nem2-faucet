@@ -16,7 +16,9 @@
                         <b-row>
                             <FaucetForm
                                 class="d-lg-none d-xl-none d-md-block mx-form"
+                                :address="networkInfo.address"
                                 :mosaic-id="networkInfo.nativeCurrencyId"
+                                :mosaic-ticker="mosaicTicker"
                                 :filter-mosaics="filterMosaics"
                                 :recipient-placeholder="recipientPlaceholder"
                                 :amount-placeholder="amountPlaceholder"
@@ -26,13 +28,12 @@
                         <b-row>
                             <div class="info">
                                 <span>Please send back claimed mosaics when you no longer need them.</span>
-                                <span
-                                    >If anyone wants to claim 3m XYM to allow setting up a voting node/supernode, please request from the
-                                    <a target="_blank" href="https://t.me/nemhelpdesk">@nemhelpdesk</a> telegram channel
+                                <span v-if="mosaicTicker === 'XYM'"
+                                    >If anyone wants to claim 3m {{ mosaicTicker }} to allow setting up a voting node/supernode, please
+                                    request from the <a target="_blank" href="https://t.me/nemhelpdesk">@nemhelpdesk</a> telegram channel
                                 </span>
                                 <span>
                                     Faucet Address:
-
                                     <span class="highlight">
                                         <a target="_blank" :href="faucetAccountUrl">
                                             {{ networkInfo.address }}
@@ -48,7 +49,9 @@
             <b-col lg="6">
                 <FaucetForm
                     class="d-lg-block d-none"
+                    :address="networkInfo.address"
                     :mosaic-id="networkInfo.nativeCurrencyId"
+                    :mosaic-ticker="mosaicTicker"
                     :filter-mosaics="filterMosaics"
                     :recipient-placeholder="recipientPlaceholder"
                     :amount-placeholder="amountPlaceholder"
@@ -74,13 +77,17 @@ export default {
             return this.$store.getters.getNetworkInfo;
         },
         recipientPlaceholder() {
-            return `Address start with a capital ${this.networkInfo.address[0]}`;
+            return `Address starts with a capital ${this.networkInfo.address[0]}`;
         },
         amountPlaceholder() {
-            return `(Faucet will pay up to ${this.networkInfo.nativeCurrencyMaxOut} XYM, or enter custom amount)`;
+            return `(Faucet will pay up to ${this.networkInfo.nativeCurrencyMaxOut} ${this.mosaicTicker}, or enter custom amount)`;
         },
         faucetAccountUrl() {
             return `${this.networkInfo.explorerUrl}accounts/${Address.createFromRawAddress(this.networkInfo.address).plain()}`;
+        },
+
+        mosaicTicker() {
+            return this.networkInfo.nativeCurrencyName?.split('.').pop().toUpperCase() || 'XYM';
         },
     },
     created() {
